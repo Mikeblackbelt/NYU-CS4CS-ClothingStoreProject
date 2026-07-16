@@ -10,9 +10,22 @@ type CartItem = Product & {
 
 interface CartStore {
   items: CartItem[];
-  addToCart: (product: any) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+
+  addToCart: (product: CartItem) => void;
+
+  removeFromCart: (
+    id: number,
+    selectedSize?: string,
+    selectedColor?: string
+  ) => void;
+
+  updateQuantity: (
+    id: number,
+    selectedSize: string | undefined,
+    selectedColor: string | undefined,
+    quantity: number
+  ) => void;
+
   getTotalPrice: () => number;
 }
 
@@ -37,14 +50,30 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }
   }),
 
-  removeFromCart: (id) => set((state) => ({
-    items: state.items.filter(item => item.id !== id)
+  removeFromCart: (id, selectedSize, selectedColor) =>
+  set((state) => ({
+    items: state.items.filter(
+      (item) =>
+        !(
+          item.id === id &&
+          item.selectedSize === selectedSize &&
+          item.selectedColor === selectedColor
+        )
+    ),
   })),
 
-  updateQuantity: (id, quantity) => set((state) => ({
-    items: state.items.map(item =>
-      item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-    )
+ updateQuantity: (id, selectedSize, selectedColor, quantity) =>
+  set((state) => ({
+    items: state.items.map((item) =>
+      item.id === id &&
+      item.selectedSize === selectedSize &&
+      item.selectedColor === selectedColor
+        ? {
+            ...item,
+            quantity: Math.max(1, quantity),
+          }
+        : item
+    ),
   })),
 
   getTotalPrice: () => {
